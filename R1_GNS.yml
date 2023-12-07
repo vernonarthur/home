@@ -6,7 +6,7 @@
 
     tasks: 
       - name: Mulitple Show commands -- Check any IGNORED results && FAILED
-        ios_command:
+        cisco.ios.ios_command:
           commands: show run all | in ssh,show ip http server status,show run | section vty
         register: result
 
