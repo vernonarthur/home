@@ -1,0 +1,60 @@
+---
+  - name: capture show output
+    hosts: GNS3
+    gather_facts: no
+    connection: network_cli
+
+    tasks: 
+      - name: Mulitple Show commands -- Check any IGNORED results && FAILED
+        ios_command:
+          commands: show run all | in ssh,show ip http server status,show run | section vty
+        register: result
+
+      - name: Show result
+        debug:
+          msg: "{{ result.stdout_lines }}"  ## will display all commands
+  #        msg: "{{ result.stdout_lines[0] }}"   ## will only show the first one
+
+      - name: CHeck SSH version (fail if NOT SSH v2)
+        ignore_errors: true
+        assert:      
+          that:
+            - "'version 2' in (result.stdout_lines | trim ('trim') )"  ##if stdoutlines[0] will only run first command
+          success_msg: "Passed: SSH Version 2"
+          fail_msg: "Failed: NOT on SSH v2"
+
+      - name: CHeck key Size
+        ignore_errors: true
+        assert:      
+          that:
+            - "'size 1024' in (result.stdout_lines | trim ('trim') )"
+          success_msg: "Passed: key size >= 1024"
+          fail_msg: "Failed: key size smaller than 1024"
+
+      - name: check http server (fail if enabled)
+        ignore_errors: true
+##        ignore_errors: true    (will add ignored = 1 in Summary)
+        assert:      
+          that:
+            - "'HTTP server status: Disabled' in (result.stdout_lines | trim ('trim') )"
+          success_msg: "Passed: HTTP server disabled"
+          fail_msg: "Failed: HTTP server enabled"
+
+      - name: check https secure server (fail if enabled)
+        ignore_errors: true
+        assert:      
+          that:
+            - "'HTTP secure server status: Disabled' in (result.stdout_lines | trim ('trim') )"
+          success_msg: "Passed: HTTP secure server disabled"
+          fail_msg: "Failed: HTTP secure server enabled"
+
+      - name: check vty tarnspot imput is only SSH (fail if anything else except SSH)
+        ignore_errors: true
+        assert:      
+          that:
+            - "'transport input ssh' in (result.stdout_lines | trim ('trim') )"
+          success_msg: "Passed: only SSH allowed"
+          fail_msg: "Failed: other protocols allowed"
+
+#### WORKS EITHER OR Not matching will fail  ####  SEPERATE MESSAGES 
+### when first one fails then exits
