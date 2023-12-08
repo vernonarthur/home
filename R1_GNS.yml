@@ -1,21 +1,21 @@
 ---
-  - name: capture show output
+  - name: "capture show output"
     hosts: GNS3
     gather_facts: no
     connection: network_cli
 
     tasks: 
-      - name: Mulitple Show commands -- Check any IGNORED results && FAILED
+      - name: "Mulitple Show commands -- Check any IGNORED results && FAILED"
         cisco.ios.ios_command:
           commands: show run all | in ssh,show ip http server status,show run | section vty
         register: result
 
-      - name: Show result
+      - name: "Show result"
         debug:
           msg: "{{ result.stdout_lines }}"  ## will display all commands
   #        msg: "{{ result.stdout_lines[0] }}"   ## will only show the first one
 
-      - name: CHeck SSH version (fail if NOT SSH v2)
+      - name: "CHeck SSH version (fail if NOT SSH v2)"
         ignore_errors: true
         assert:      
           that:
